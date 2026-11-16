@@ -46,5 +46,5 @@ class TestCPU:
         assert cpu_model_name == RASPBERRY_PI_CPU["model_name"] and cpu_count == RASPBERRY_PI_CPU["cpu_count"]
 
     def test_cpu_temperature(self):
-        res = subprocess.run(["vcgencmd measure_temp"], capture_output=True, text=True)
+        res = subprocess.run(["vcgencmd", "measure_temp"], capture_output=True, text=True)
         print(res)
