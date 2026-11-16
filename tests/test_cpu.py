@@ -48,6 +48,10 @@ class TestCPU:
         assert cpu_model_name == RASPBERRY_PI_CPU["model_name"] and cpu_count == RASPBERRY_PI_CPU["cpu_count"]
 
     def test_cpu_temperature(self):
+        """Test function to validate CPU temperature
+        Use vcgencmd to retrieve CPU temperature, then validate 
+        it is in a safe range (30 < x < 85 degrees C)
+        """
         res = subprocess.run(["vcgencmd", "measure_temp"], capture_output=True, text=True)
 
         cpu_temp = re.search(r"temp=([\d.]+)'C", res.stdout)
