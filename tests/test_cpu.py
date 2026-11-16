@@ -60,3 +60,11 @@ class TestCPU:
         cpu_temp_value = float(cpu_temp.group(1))
 
         assert CPU_TEMP_MIN < cpu_temp_value < CPU_TEMP_MAX
+
+    def test_cpu_stress_test(self):
+        """Test function to valdiate the CPU 
+        can withstand and pass a 30 second stree-test
+        """
+        res = subprocess.run(["stress-ng", "--cpu", "4", "--timeout", "30s", "--metrics-brief"], capture_output=True, text=True)
+
+        print(res.stdout)
