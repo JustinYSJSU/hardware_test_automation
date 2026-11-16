@@ -22,6 +22,9 @@ TEST_PC_CPU = {
 CPU_TEMP_MIN = 30.0
 CPU_TEMP_MAX = 85.0
 
+THROTTLED_STATUES = {
+
+}
 class TestCPU:
 
     def test_cpu_model_name_and_count(self):
@@ -66,9 +69,11 @@ class TestCPU:
         not thorttling
         """
         res = subprocess.run(["vcgencmd", "get_throttled"], capture_output=True, text=True)
-        print(res.stdout)
-        print(type(res.stdout))
         
+        throttled_status = int(res.stdout.strip().split("=")[1], 16)
+
+        print(throttled_status)
+
     def test_cpu_stress(self):
         """Test function to valdiate the CPU 
         can withstand and pass a 30 second stree-test
