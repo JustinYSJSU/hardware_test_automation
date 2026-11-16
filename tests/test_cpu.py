@@ -61,7 +61,15 @@ class TestCPU:
 
         assert CPU_TEMP_MIN < cpu_temp_value < CPU_TEMP_MAX
 
-    def test_cpu_stress_test(self):
+    def test_cpu_throttling(self):
+        """Test function to valdiate CPU is
+        not thorttling
+        """
+        res = subprocess.run(["vcgencmd", "get_throttled"], capture_output=True, text=True)
+        print(res.stdout)
+        print(type(res.stdout))
+        
+    def test_cpu_stress(self):
         """Test function to valdiate the CPU 
         can withstand and pass a 30 second stree-test
         """
