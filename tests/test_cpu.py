@@ -47,4 +47,7 @@ class TestCPU:
 
     def test_cpu_temperature(self):
         res = subprocess.run(["vcgencmd", "measure_temp"], capture_output=True, text=True)
-        print(res)
+
+        cpu_temp = re.search(r"temp=([\d.]+)'C", res.stdout)
+        print(cpu_temp)
+        print(type(cpu_temp))
