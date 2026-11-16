@@ -1,8 +1,7 @@
 """test_cpu.py
 
 Automated tests to validate the following:
-- CPU model name
-- Number of CPU(s)
+- CPU model name, Number of CPU(s)
 - CPU temperature is in a safe range
 - CPU can withstand a 30 second stress test
 - CPU is not throttling
@@ -19,6 +18,9 @@ TEST_PC_CPU = {
     "model_name": "AMD Ryzen 7 7700X 8-Core Processor",
     "cpu_count": 16
 }
+
+CPU_TEMP_MIN = 30.0
+CPU_TEMP_MAX = 85.0
 
 class TestCPU:
 
@@ -49,5 +51,8 @@ class TestCPU:
         res = subprocess.run(["vcgencmd", "measure_temp"], capture_output=True, text=True)
 
         cpu_temp = re.search(r"temp=([\d.]+)'C", res.stdout)
-        print(cpu_temp)
-        print(type(cpu_temp))
+        assert cpu_temp is not None 
+
+        cpu_temp_value = float(cpu_temp.group(1))
+
+        assert CPU_TEMP_MIN < cpu_temp_value < CPU_TEMP_MAX
