@@ -9,6 +9,7 @@ Automated tests to validate the following:
 import subprocess
 import re
 import threading
+import time
 
 RASPBERRY_PI_CPU = {
     "model_name": "Cortex-A72",
