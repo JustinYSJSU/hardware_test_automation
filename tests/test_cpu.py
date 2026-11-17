@@ -8,6 +8,7 @@ Automated tests to validate the following:
 """
 import subprocess
 import re
+import threading
 
 RASPBERRY_PI_CPU = {
     "model_name": "Cortex-A72",
@@ -22,10 +23,44 @@ TEST_PC_CPU = {
 CPU_TEMP_MIN = 30.0
 CPU_TEMP_MAX = 85.0
 
-THROTTLED_STATUES = {
+PASSING_STRESS_TEST = 0
 
-}
 class TestCPU:
+
+    def get_cpu_temperature(self):
+        """Helper function to retrieve current CPU temperature
+        """
+        res = subprocess.run(["vcgencmd", "measure_temp"], capture_output=True, text=True)
+
+        cpu_temp = re.search(r"temp=([\d.]+)'C", res.stdout)
+        assert cpu_temp is not None 
+
+        cpu_temp_value = float(cpu_temp.group(1))
+        return cpu_temp_value
+    
+    def get_cpu_throttling(self):
+        """Helper function to retrieve CPU throttling status
+        """
+        res = subprocess.run(["vcgencmd", "get_throttled"], capture_output=True, text=True)
+        
+        throttled_status = int(res.stdout.strip().split("=")[1], 16)
+
+        return throttled_status
+
+    def monitor_cpu(self, stop_event, results):
+        """Helper function to monitor CPU temperature and thorttling status
+        during stress test
+        """
+        while not stop_event.is_set():
+            # Collect CPU temperature
+            temp = self.get_cpu_temperature()
+            results["temperatures"].append(temp)
+
+            # Collect CPU throttling status
+            throttling = self.get_cpu_throttling()
+            results["throttling"].append(throttling)
+
+            time.sleep(1)
 
     def test_cpu_model_name_and_count(self):
         """Test function to validate CPU model name
@@ -71,13 +106,32 @@ class TestCPU:
         res = subprocess.run(["vcgencmd", "get_throttled"], capture_output=True, text=True)
         
         throttled_status = int(res.stdout.strip().split("=")[1], 16)
-
-        print(throttled_status)
-
+        
     def test_cpu_stress(self):
         """Test function to valdiate the CPU 
         can withstand and pass a 30 second stree-test
         """
-        res = subprocess.run(["stress-ng", "--cpu", "4", "--timeout", "30s", "--metrics-brief"], capture_output=True, text=True)
+        stop_event = threading.Event()
+
+        results = {
+                "temperatures": [],
+                "throttling": []
+        }
+
+        monitor_thread = threading.Thread(
+            target=self.monitor_cpu,
+            args=(stop_event, results)
+        )
+
+        monitor_thread.start()
+
+        try:    
+            res = subprocess.run(["stress-ng", "--cpu", "4", "--timeout", "30s", "--metrics-brief"], capture_output=True, text=True)
+        finally:
+            stop_event.set()
+            monitor_thread.join()
+
+        assert res.returncode == PASSING_STRESS_TEST, "CPU stress test failed"
+        assert max_temp < self.MAX_CPU_TEMP, "CPU temperature exceeded limit"
 
         print(res.stdout)
