@@ -132,6 +132,8 @@ class TestCPU:
             stop_event.set()
             monitor_thread.join()
 
+        max_temp = max(results["temperatures"])
+        
         assert res.returncode == PASSING_STRESS_TEST, "CPU stress test failed"
         assert max_temp < MAX_CPU_TEMP, "CPU temperature exceeded limit"
 
